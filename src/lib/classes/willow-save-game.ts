@@ -11,7 +11,9 @@ import {
 import { DLCData } from './dlc-data';
 
 export class WillowSaveGame {
-	readonly decoder: TextDecoder = new TextDecoder();
+	private readonly decoder: TextDecoder = new TextDecoder();
+	data: Uint8Array = new Uint8Array();
+	binaryReader: BinaryReader = new BinaryReader(new Uint8Array());
 
 	byteOrder: ByteOrder = ByteOrder.LittleEndian;
 	platform: Platform = Platform.Unknown;
@@ -147,25 +149,28 @@ export class WillowSaveGame {
 	titleID: number = 1414793191;
 
 	async openSave(save: File | Uint8Array): Promise<void> {
-		let data: Uint8Array;
+		this.platform = await PlatformDetector.detect(save);
 
+		let data: Uint8Array;
 		if (save instanceof File) {
-			data = new Uint8Array(await save.arrayBuffer());
 			this.openedWsg = save.name;
+			data = new Uint8Array(await save.arrayBuffer());
+
+			// TODO: extract from STFS
 		} else {
 			data = save;
 			this.openedWsg = 'memory';
 		}
+		this.data = data;
+		this.binaryReader = new BinaryReader(this.data);
 
-		this.platform = await PlatformDetector.detect(data);
+		this.readSave();
 	}
 
-	readSave(data: Uint8Array): void {
-		const reader = new BinaryReader(data, this.byteOrder);
+	readSave(): void {
+		this.magicHeader = this.decoder.decode(this.binaryReader.getBytes(0, 3));
 
-		this.magicHeader = this.decoder.decode(reader.readBytes(3));
-
-		const version = reader.readInt32();
+		const version = this.binaryReader.getUInt32(3, ByteOrder.LittleEndian);
 
 		if (version == SAVE_VERSION_PC) {
 			this.byteOrder = ByteOrder.LittleEndian;
@@ -173,13 +178,11 @@ export class WillowSaveGame {
 		} else if (version == SAVE_VERSION_PS3) {
 			this.byteOrder = ByteOrder.BigEndian;
 			this.versionNumber = 2;
-
-			reader.endian = ByteOrder.BigEndian;
 		} else {
 			throw new Error(`unknown version: ${version}`);
 		}
 
-		this.plyr = this.decoder.decode(reader.readBytes(4));
+		this.plyr = this.decoder.decode(this.binaryReader.getBytes(3, 4));
 		if (this.plyr !== 'PLYR') {
 			throw new Error('Invalid PLYR header');
 		}

@@ -2,80 +2,39 @@ import { ByteOrder } from '$lib/types';
 
 export class BinaryReader {
 	private view: DataView;
-	private offset: number = 0;
+	private textDecoder: TextDecoder = new TextDecoder('ascii');
 
-	constructor(
-		private data: Uint8Array,
-		public endian: ByteOrder = ByteOrder.LittleEndian
-	) {
+	constructor(private data: Uint8Array) {
 		this.view = new DataView(data.buffer, data.byteOffset, data.byteLength);
 	}
 
-	readBytes(length: number): Uint8Array {
-		const result = this.data.slice(this.offset, this.offset + length);
-		this.offset += length;
-		return result;
+	getBytes(offset: number, length: number): Uint8Array {
+		return this.data.slice(offset, offset + length);
 	}
 
-	readInt32(): number {
-		const value =
-			this.endian === 'little' ? this.view.getInt32(this.offset, true) : this.view.getInt32(this.offset, false);
-		this.offset += 4;
-		return value;
+	getUint8(offset: number): number {
+		return this.view.getUint8(offset);
 	}
 
-	readInt16(): number {
-		const value =
-			this.endian === 'little' ? this.view.getInt16(this.offset, true) : this.view.getInt16(this.offset, false);
-		this.offset += 2;
-		return value;
+	getUint16(offset: number, byteOrder: ByteOrder): number {
+		return this.view.getUint16(offset, Boolean(byteOrder));
 	}
 
-	readFloat32(): number {
-		const value =
-			this.endian === 'little' ? this.view.getFloat32(this.offset, true) : this.view.getFloat32(this.offset, false);
-		this.offset += 4;
-		return value;
+	getUint24(offset: number, byteOrder: ByteOrder): number {
+		return this.view.getUint16(offset, Boolean(byteOrder)) | (this.view.getUint8(offset + 2) << 16);
 	}
 
-	readByte(): number {
-		const value = this.view.getUint8(this.offset);
-		this.offset += 1;
-		return value;
+	getUInt32(offset: number, byteOrder: ByteOrder): number {
+		return this.view.getUint32(offset, Boolean(byteOrder));
 	}
 
-	readString(): string {
-		const length = this.readInt32();
-
-		if (length === 0) return '';
-
-		if (length < 0) {
-			// Unicode string (UTF-16)
-			const byteLength = -length * 2;
-			const bytes = this.readBytes(byteLength);
-
-			// Convert UTF-16 to string
-			const uint16 = new Uint16Array(bytes.buffer, bytes.byteOffset, byteLength / 2);
-			if (this.endian === 'big') {
-				// Swap bytes if needed
-				for (let i = 0; i < uint16.length; i++) {
-					uint16[i] = ((uint16[i] & 0xff) << 8) | ((uint16[i] >> 8) & 0xff);
-				}
-			}
-			return String.fromCharCode(...uint16).split('\0')[0];
-		} else {
-			// ASCII string
-			const bytes = this.readBytes(length);
-			const decoder = new TextDecoder('windows-1252');
-			return decoder.decode(bytes).split('\0')[0];
-		}
+	getUint64(offset: number, byteOrder: ByteOrder): bigint {
+		const high = BigInt(this.view.getUint32(offset, Boolean(byteOrder)));
+		const low = BigInt(this.view.getUint32(offset + 4, Boolean(byteOrder)));
+		return (high << 32n) | low;
 	}
 
-	seek(position: number): void {
-		this.offset = position;
-	}
-
-	tell(): number {
-		return this.offset;
+	getString(offset: number, length: number): string {
+		return this.textDecoder.decode(this.getBytes(offset, length));
 	}
 }

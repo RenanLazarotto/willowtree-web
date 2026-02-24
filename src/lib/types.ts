@@ -1,6 +1,6 @@
 export enum ByteOrder {
-	LittleEndian = 'little',
-	BigEndian = 'big',
+	LittleEndian = 1,
+	BigEndian = 0,
 }
 
 export enum Platform {
