@@ -6,47 +6,47 @@ export class DLCData {
 	readonly Section3Id: number = 0x32235947;
 	readonly Section4Id: number = 0x234ba901;
 
-	hasSection1: boolean = false;
-	hasSection2: boolean = false;
-	hasSection3: boolean = false;
-	hasSection4: boolean = false;
+	hasSection1: boolean = $state(false);
+	hasSection2: boolean = $state(false);
+	hasSection3: boolean = $state(false);
+	hasSection4: boolean = $state(false);
 
 	dataSections: DLCSection[] = [];
-	dlcSize: number = 0;
+	dlcSize: number = $state(0);
 
-	bankSize: number = 0;
-	bankInventory: BankEntry[] = [];
+	bankSize: number = $state(0);
+	bankInventory: BankEntry[] = $state([]);
 
 	// All of these values are boolean flags. If you set them to any value except
 	// 0 the game will rewrite them as 1.
-	dlcUnknown1: number = 0; // Probably CanAccessBank
-	dlcUnknown2: number = 0;
-	dlcUnknown3: number = 0;
-	dlcUnknown4: number = 0;
-	dlcUnknown5: number = 0; // Probably CanExceedLevel50. Removing this will de-level your character to 50
+	dlcUnknown1: number = $state(0); // Probably CanAccessBank
+	dlcUnknown2: number = $state(0);
+	dlcUnknown3: number = $state(0);
+	dlcUnknown4: number = $state(0);
+	dlcUnknown5: number = $state(0); // Probably CanExceedLevel50. Removing this will de-level your character to 50
 
-	skipDlc2Intro: number = 0;
-	secondaryPackEnabled: number = 0;
+	skipDlc2Intro: number = $state(0);
+	secondaryPackEnabled: number = $state(0);
 
-	numberOfItems: number = 0;
-	itemStrings: string[][] = [];
-	itemValues: number[][] = [];
+	numberOfItems: number = $state(0);
+	itemStrings: string[][] = $state([]);
+	itemValues: number[][] = $state([]);
 
-	numberOfWeapons: number = 0;
-	weaponStrings: string[][] = [];
-	weaponValues: number[][] = [];
+	numberOfWeapons: number = $state(0);
+	weaponStrings: string[][] = $state([]);
+	weaponValues: number[][] = $state([]);
 
-	totalItems: number = 0;
-	itemParts: string[][] = [];
-	itemQuantity: number[] = [];
-	itemLevel: number[] = [];
-	itemQuality: number[] = [];
-	itemEquipped: number[] = [];
+	totalItems: number = $state(0);
+	itemParts: string[][] = $state([]);
+	itemQuantity: number[][] = $state([]);
+	itemLevel: number[][] = $state([]);
+	itemQuality: number[][] = $state([]);
+	itemEquipped: number[][] = $state([]);
 
-	totalWeapons: number = 0;
-	weaponParts: string[][] = [];
-	weaponAmmo: number[] = [];
-	weaponLevel: number[] = [];
-	weaponQuality: number[] = [];
-	weaponEquippedSlot: number[] = [];
+	totalWeapons: number = $state(0);
+	weaponParts: string[][] = $state([]);
+	weaponAmmo: number[][] = $state([]);
+	weaponLevel: number[][] = $state([]);
+	weaponQuality: number[][] = $state([]);
+	weaponEquippedSlot: number[][] = $state([]);
 }
